@@ -23,19 +23,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //Need to download piece of software to view
         print(Realm.Configuration.defaultConfiguration.fileURL)
         
-        //Create new data in realm
-        let data = Data()
-        data.name = "Eric"
-        
         //Add it to database
         /**
          do this by using realm.write
         */
         do {
             let realm = try Realm()
-            try realm.write {
-                realm.add(data)
-            }
         }
         catch{
             print("Error generating the realm object \(error)")
