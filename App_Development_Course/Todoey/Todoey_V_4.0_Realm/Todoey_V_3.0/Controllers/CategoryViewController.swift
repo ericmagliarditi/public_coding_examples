@@ -7,13 +7,14 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
     
-    var categoryArray = [Category]()
+    var categoryArray: Results<Category>?
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let realm = try! Realm()
+    //Use the ! here so we can hint at bad code or it can be used as something to force the issue at hand so the compiler runs it
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,14 +26,18 @@ class CategoryViewController: UITableViewController {
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return categoryArray.count
+        /**
+         Below is the nil collesing operator - says the left hand side maybe nil and if it is nil assign it to 1, if it is not nil then get the true count
+         A single questionmark says do this if not nil
+        */
+        return categoryArray?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        cell.textLabel?.text = categoryArray[indexPath.row].name
+        cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added"
         
         return cell
     }
@@ -48,15 +53,17 @@ class CategoryViewController: UITableViewController {
         let destinationVC = segue.destination as! ToDoListViewController
         
         if let indexPath = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCategory = categoryArray[indexPath.row]
+            destinationVC.selectedCategory = categoryArray?[indexPath.row]
         }
     }
     
     //MARK: - Data Manipulation Methods
     
-    func saveCategories() {
+    func saveCategories(category: Category) {
         do {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         }
         catch {
             print("Error saving category data \(error)")
@@ -67,14 +74,14 @@ class CategoryViewController: UITableViewController {
     
     func loadCategories() {
         
-        let request : NSFetchRequest<Category> = Category.fetchRequest()
-        
-        do {
-            categoryArray = try context.fetch(request)
-        }
-        catch {
-            print("Error Loading Category data \(error)")
-        }
+        /**
+         To read in data - we dont need a fetch request like in CoreData
+         We can use this one line of code to grab the categories
+         Cant just assing it to the categoryArray
+         The datatybe of the objects we are getting back is Results which is a container type from Realm Swift
+         Thus you cant assign it simply to the category Array
+        */
+        categoryArray = realm.objects(Category.self)
         
         tableView.reloadData()
     }
@@ -89,13 +96,14 @@ class CategoryViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             
             newCategory.name = textField.text!
             
-            self.categoryArray.append(newCategory)
+//            self.categoryArray.append(newCategory)
+            //It automatically updates so it doesnt need the append
             
-            self.saveCategories()
+            self.saveCategories(category: newCategory)
             
         }
         

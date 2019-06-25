@@ -11,4 +11,14 @@ import RealmSwift
 
 class Category: Object {
     @objc dynamic var name: String = ""
+    /**
+     We now want to develop the parent/child relationship of the data
+     Do that in the following manner:
+     create an items array using the List object - A realm object
+     NEED TO DECLARE THE VARIABLE TYPE IN THE List Object
+     You initialize the list as an empty array of sorts
+     This allows us to define the forward relationship
+     Category --> Items
+    */
+    let items = List<Item>()
 }
