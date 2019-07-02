@@ -12,6 +12,7 @@ import RealmSwift
 class Item: Object {
     @objc dynamic var title: String = ""
     @objc dynamic var done: Bool = false
+    @objc dynamic var dateCreated: Date?
     
     /**
      Need to create the parent child relationship - already astablished in the category but need to create the inverse relationship - this is not automatically generated as in CoreData
