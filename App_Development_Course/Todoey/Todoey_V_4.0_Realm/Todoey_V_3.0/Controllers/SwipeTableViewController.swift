@@ -20,21 +20,9 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
         
         let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
             //What happens when it is deleted
-            print("Delete Cell")
-            /**
-             We do this because of the optionality we have to do this
-             */
-//            if let categoryForDeletion = self.categoryArray?[indexPath.row] {
-//                do {
-//                    try self.realm.write {
-//                        self.realm.delete(categoryForDeletion)
-//                    }
-//                }
-//                catch {
-//                    print("Error deleting data \(error)")
-//                }
-//
-//            }
+            
+            self.updateModel(at: indexPath)
+        
         }
         
         // customize the action appearance
@@ -51,6 +39,23 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
         return options
     }
     
+    
+    //Mark Table View Data Source Methods
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! SwipeTableViewCell
+    
+        cell.delegate = self
+        
+        return cell
+    }
+    
+    func updateModel(at indexPath: IndexPath){
+        /**
+         Where we update our data model
+        */
+    }
 
 
 }
