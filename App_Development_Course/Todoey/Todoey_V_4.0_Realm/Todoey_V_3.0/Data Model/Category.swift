@@ -21,4 +21,5 @@ class Category: Object {
      Category --> Items
     */
     let items = List<Item>()
+    @objc dynamic var colorCat: String = ""
 }
