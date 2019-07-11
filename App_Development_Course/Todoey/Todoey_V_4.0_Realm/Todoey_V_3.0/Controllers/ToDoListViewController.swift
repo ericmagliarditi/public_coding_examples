@@ -8,11 +8,16 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class ToDoListViewController: SwipeTableViewController {
     
     var todoItems: Results<Item>?
     let realm = try! Realm()
+    
+    
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     
     var selectedCategory : Category? {
         didSet {
@@ -23,9 +28,54 @@ class ToDoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        
+        tableView.separatorStyle = .none
+        
+        
+        
 
     }
+    
+    /**
+     Here is the issue - view did load loads up the items before the navigation bar is accurately accessed by the controller - so we use this viewWillAppear which gets called right after viewdid load in order to set the navigation controller!
+    */
+    override func viewWillAppear(_ animated: Bool) {
+        
+        guard let colorHex = selectedCategory?.colorCat else{fatalError()}
+            //Use guard when we dont have an else in the if let especially when the app will not work if the if let fails
+        guard let navBar = navigationController?.navigationBar else {fatalError("Nav Bar Not loaded yet")}
+        
+    
+        //Remember we are in a optional binding so can make it an absolute reference
+        title = selectedCategory!.name
+            
+            
+            //This will change the buttons in the navBar
+        guard let navBarColor = UIColor(hexString: colorHex) else {fatalError()}
+                navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+                searchBar.barTintColor = navBarColor
+                navBar.barTintColor = navBarColor
+                //Must use larget title since that is what we are using
+                navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        
+    }
+    
+    /**
+     Ok so we also need to call something when the nav bar is just about to disappear because it carries over the color which we dont want
+     This is the point where we are dismssing this
+    */
+    override func viewWillDisappear(_ animated: Bool) {
+        guard let originalColor = UIColor(hexString: "434343") else {fatalError()}
+        navigationController?.navigationBar.barTintColor = originalColor
+        navigationController?.navigationBar.tintColor = FlatWhite()
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : FlatWhite()]
+        
+    }
+    
+    /**
+     We are going to create a function that deals with nav Bar since there is too much code repeating
+    */
     
     //MARK: - TableView DataSource Methods
     
@@ -44,7 +94,18 @@ class ToDoListViewController: SwipeTableViewController {
             //Ternary Operations
             // value = condition ? valueIfTrue : valueIfFalse
             cell.accessoryType = item.done ? .checkmark : .none
-    
+            
+            /**
+             We use optional binding here but notice we can use the exclamation point on the todoItems since we already are in an optional binding of the todoItems - meaning it can never be nil within this code block
+            */
+            
+            
+            if let colorFloat = UIColor(hexString: selectedCategory!.colorCat )?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+                
+                cell.backgroundColor = colorFloat
+                
+                cell.textLabel?.textColor = ContrastColorOf(colorFloat, returnFlat: true)
+                }
         }
         else {
             cell.textLabel?.text = "No Items Added"
@@ -137,7 +198,7 @@ class ToDoListViewController: SwipeTableViewController {
     
     func loadItems(){
         
-        todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: false)
         
         tableView.reloadData()
         
@@ -152,7 +213,7 @@ extension ToDoListViewController: UISearchBarDelegate {
         /**
          We filter by the SQL type query and filter based on date created
         */
-        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: false)
         
         tableView.reloadData()
     }
