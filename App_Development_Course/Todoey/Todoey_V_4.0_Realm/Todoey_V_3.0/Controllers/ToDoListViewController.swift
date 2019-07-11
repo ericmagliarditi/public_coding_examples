@@ -42,22 +42,14 @@ class ToDoListViewController: SwipeTableViewController {
     */
     override func viewWillAppear(_ animated: Bool) {
         
-        guard let colorHex = selectedCategory?.colorCat else{fatalError()}
-            //Use guard when we dont have an else in the if let especially when the app will not work if the if let fails
-        guard let navBar = navigationController?.navigationBar else {fatalError("Nav Bar Not loaded yet")}
-        
-    
         //Remember we are in a optional binding so can make it an absolute reference
         title = selectedCategory!.name
-            
-            
-            //This will change the buttons in the navBar
-        guard let navBarColor = UIColor(hexString: colorHex) else {fatalError()}
-                navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
-                searchBar.barTintColor = navBarColor
-                navBar.barTintColor = navBarColor
-                //Must use larget title since that is what we are using
-                navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+    
+        guard let colorHex = selectedCategory?.colorCat else{fatalError()}
+            //Use guard when we dont have an else in the if let especially when the app will not work if the if let fails
+        
+        updateNavBar(withHexCode: colorHex)
+       
         
     }
     
@@ -66,16 +58,31 @@ class ToDoListViewController: SwipeTableViewController {
      This is the point where we are dismssing this
     */
     override func viewWillDisappear(_ animated: Bool) {
-        guard let originalColor = UIColor(hexString: "434343") else {fatalError()}
-        navigationController?.navigationBar.barTintColor = originalColor
-        navigationController?.navigationBar.tintColor = FlatWhite()
-        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : FlatWhite()]
-        
+     
+        updateNavBar(withHexCode: "434343")
     }
     
     /**
      We are going to create a function that deals with nav Bar since there is too much code repeating
     */
+    //MARK: - NavBar Setup Code Methods
+    func updateNavBar(withHexCode colorHexCode: String){
+        guard let navBar = navigationController?.navigationBar else {fatalError("Nav Bar Not loaded yet")}
+        
+        //This will change the buttons in the navBar
+        guard let navBarColor = UIColor(hexString: colorHexCode) else {fatalError()}
+        
+        navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+        
+        searchBar.barTintColor = navBarColor
+        
+        navBar.barTintColor = navBarColor
+        
+        //Must use larget title since that is what we are using
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        
+    }
+    
     
     //MARK: - TableView DataSource Methods
     
@@ -198,7 +205,7 @@ class ToDoListViewController: SwipeTableViewController {
     
     func loadItems(){
         
-        todoItems = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: false)
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
         
         tableView.reloadData()
         
