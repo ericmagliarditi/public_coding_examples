@@ -1,0 +1,7 @@
+*.egg-info/
+__pycache__/
+.DS_Store
+landpy/__pycache__/*
+jupyter_notebooks
+*/__pycache__/*
+*/bash_scripts/*
