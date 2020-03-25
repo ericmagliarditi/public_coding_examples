@@ -1,10 +1,17 @@
 # public_coding_examples
-This repository contains some coding examples. Feel free to reach out if you want to learn more!
+  This repository contains some coding examples. Feel free to reach out if you want to learn more!
 
-Kaggle - This directory contains a jupyter notebook from a Kaggle Data competition that I participated in. 
+# Kaggle 
+  This directory contains a jupyter notebook from a Kaggle Data competition that I participated in. 
 
-16.89 - This directory contains two notebooks that show how I scripted the architecture generation & evaluation processes for Space Systems Engineering. 
+# 16.89
+  This directory contains two notebooks that show how I scripted the architecture generation & evaluation processes for Space     Systems Engineering. 
 
-Astrodynamics Project - This directory contains the mathematica notebook I used to generate interplantary trajectories to Jupiter
+# Astrodynamics Project
+  This directory contains the mathematica notebook I used to generate interplantary trajectories to Jupiter
 
-App Development Course - This directory contains some example projects I completed through the Udemy Course: iOS 11 & Swift 4 - The Complete iOS App Development Bootcamp
+# App Development Course 
+  This directory contains some example projects I completed through the Udemy Course: iOS 11 & Swift 4 - The Complete iOS App     Development Bootcamp
+  
+# Land Classification
+  Directory contains the code to train, evaluate, and visualize the land use classifier I built using PyTorch. One of my         favorite machine learning examples!
