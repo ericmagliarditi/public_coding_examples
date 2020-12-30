@@ -28,7 +28,7 @@ def execute(args):
 
     # Satellite Image Transformations
     t = transforms.Compose([
-        transforms.Resize(args.input_image_size),
+        transforms.Resize(args.input_image_size, interpolation=4),
         transforms.ColorJitter(),
         transforms.RandomHorizontalFlip(p=0.3),
         transforms.ToTensor(),
@@ -66,10 +66,10 @@ def execute(args):
 
     loss = torch.nn.NLLLoss(weight=loss_weights)
 
-    optimizer = torch.optim.SGD(unet_model.parameters(), lr=args.learning_rate,
-                                momentum=args.momentum
-                                )
-    # optimizer = torch.optim.Adam(unet_model.parameters(), lr=args.learning_rate)
+    # optimizer = torch.optim.SGD(unet_model.parameters(), lr=args.learning_rate,
+    #                             momentum=args.momentum
+    #                             )
+    optimizer = torch.optim.Adam(unet_model.parameters(), lr=args.learning_rate)
 
     final_path = os.path.join(args.model_paths, f"{args.final_model_name}.pt")
 

@@ -9,9 +9,9 @@ class UNet(nn.Module):
         super(UNet, self).__init__()
         
         #Contraction:
-        self.contract_1 = self.contracting_block(in_channels=in_channel, out_channels=64, kernel_size=7)
+        self.contract_1 = self.contracting_block(in_channels=in_channel, out_channels=32, kernel_size=7)
         self.contract_max_pool_1 = nn.MaxPool2d(kernel_size=2)
-        self.contract_2 = self.contracting_block(in_channels=64, out_channels=64, kernel_size=3)
+        self.contract_2 = self.contracting_block(in_channels=32, out_channels=64, kernel_size=3)
         self.contract_max_pool_2 = nn.MaxPool2d(kernel_size=2)
         self.contract_3 = self.contracting_block(in_channels=64, out_channels=128, kernel_size=3)
         self.contract_max_pool_3 = nn.MaxPool2d(kernel_size=2)
@@ -24,10 +24,11 @@ class UNet(nn.Module):
         #Expansion:
         self.expansion_3 = self.expansive_block(in_channels=512, mid_channel=256, out_channels=128)
         self.expansion_2 = self.expansive_block(in_channels=256, mid_channel=128, out_channels=64)
-        self.expansion_1 = self.expansive_block(in_channels=128, mid_channel=64, out_channels=32)
+        self.expansion_1 = self.expansive_block(kernel_size=7,
+            in_channels=128, mid_channel=64, out_channels=32)
         
         #Final Layer
-        self.final_layer = self.final_output_layer(96, 32, out_channel)
+        self.final_layer = self.final_output_layer(64, 32, out_channel)
         
     def forward(self, x):
         #Contraction AKA Encoding
@@ -51,7 +52,6 @@ class UNet(nn.Module):
         cat_layer_1 = self.crop_and_concat(decode_block_2, encode_block_2, crop=True)
         decode_block_1 = self.expansion_1(cat_layer_1)
         cat_layer_0 = self.crop_and_concat(decode_block_1, encode_block_1, crop=True)
-
         final_layer = self.final_layer(cat_layer_0)
 
         # print(f"Input shape: {x.shape}")
@@ -107,8 +107,10 @@ class UNet(nn.Module):
         contracting_block = nn.Sequential(
             nn.Conv2d(kernel_size=kernel_size, in_channels=in_channels, out_channels=out_channels),
             nn.ELU(),
+            nn.BatchNorm2d(out_channels),
             nn.Conv2d(kernel_size=kernel_size, in_channels=out_channels, out_channels=out_channels),
-            nn.ELU()
+            nn.ELU(),
+            nn.BatchNorm2d(out_channels)
         )
         
         return contracting_block
@@ -138,7 +140,7 @@ class UNet(nn.Module):
             nn.ELU(),
             #Upsample
             nn.ConvTranspose2d(in_channels=out_channels, out_channels=in_channels,
-                              kernel_size=kernel_size, stride=2, padding=1, output_padding=1)
+                              kernel_size=kernel_size, stride=2, padding=0, output_padding=1, dilation=4)
         )
         
         return bottle_neck_block
@@ -164,11 +166,13 @@ class UNet(nn.Module):
         expansive_block = nn.Sequential(
             nn.Conv2d(kernel_size=kernel_size, in_channels=in_channels, out_channels=mid_channel),
             nn.ELU(),
+            nn.BatchNorm2d(mid_channel),
             nn.Conv2d(kernel_size=kernel_size, in_channels=mid_channel, out_channels=mid_channel),
             nn.ELU(),
+            nn.BatchNorm2d(mid_channel),
             #Now need to apply upsampling
             nn.ConvTranspose2d(in_channels=mid_channel, out_channels=out_channels,
-                               kernel_size=3, stride=2, padding=1, output_padding=1)
+                               kernel_size=kernel_size, stride=2, padding=0, output_padding=1, dilation=4)
         )
         
         return expansive_block
@@ -196,11 +200,14 @@ class UNet(nn.Module):
         final_layer = nn.Sequential(
             nn.Conv2d(kernel_size=kernel_size, in_channels=in_channels, out_channels=mid_channel),
             nn.ELU(),
+            nn.BatchNorm2d(mid_channel),
             nn.Conv2d(kernel_size=kernel_size, in_channels=mid_channel, out_channels=mid_channel),
             nn.ELU(),
+            nn.BatchNorm2d(mid_channel),
             nn.Conv2d(kernel_size=kernel_size, in_channels=mid_channel, out_channels=out_channels,
                      padding=1),
             nn.ELU(),
+            nn.BatchNorm2d(out_channels),
         )
         
         return final_layer

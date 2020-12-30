@@ -5,6 +5,9 @@ import torch
 from .my_data_loader import MyDataLoader
 from sklearn.metrics import jaccard_similarity_score as jsc
 from sklearn.metrics import confusion_matrix  
+import json
+import os
+from PIL import Image, ImageOps
 
 
 def create_data_loaders(data_set, training_split, batch_size):
@@ -175,6 +178,73 @@ def calculate_output_size(input_size, first_kernel_size):
     label_size = e_3 - 4
 
     return label_size
+
+def calculate_percentages(prediction_image, output_path):
+    '''
+    Determines percent of pixels of specific land use
+
+    ..param prediction_image: Numpy 2D array of prediction
+    ..paramtype prediction_image: numpy array
+    '''
+
+    land_use_d = {0:"Urban", 1: "Agriculture",
+        2: "Rangeland", 3: "Forest", 4: "Water",
+        5: "Barren", 6: "Unknown"
+    }
+    flattened_list = list(prediction_image.flatten())
+
+    count_dict = {}
+    total = len(flattened_list)
+    for key in land_use_d:
+        num_land_use = flattened_list.count(key)
+        count_dict[land_use_d[key]] = round((num_land_use/total)*100, 2)
+    
+    json_path = os.path.join(output_path, "output.json")
+    with open(json_path, 'w') as f:
+        json.dump(count_dict, f)
+
+    return None
+
+def crop_image(raw_image):
+    '''
+    Crops the image so it is square
+
+    ..param raw_image: The image needed to be predicted
+    ..paramtype raw_image: PIL Image
+
+    ..return raw_image: Resized to form
+    ..rtype: PIL Image
+    '''
+    width, height = raw_image.size
+    limiting_size = min(width, height)
+    size = limiting_size, limiting_size
+    # raw_image.thumbnail(size,Image.ANTIALIAS)
+    crop_image = ImageOps.fit(raw_image, size, Image.ANTIALIAS)
+
+    return crop_image
+
+def get_image_for_prediction(image_path, transformation):
+    '''
+    Creates image in proper form for predicition
+
+    ..param image_path: File path that points to Image
+    ..paramtype image_path: str
+
+    ..param transformation: PyTorch Image Transformations
+    ..paramtype transformation: torchvision.transforms
+
+    ..return image: Proper representation of image for prediction
+    ..rtype: torch tensor
+    '''
+
+    raw_image = Image.open(image_path)
+    print(f"Raw Image Dimensions (Width x Height): {raw_image.size}")
+    resized_image = crop_image(raw_image)
+    print(f"Resized Image Dimensions (Width x Height): {resized_image.size}")
+    image = transformation(resized_image)
+    
+    return image.unsqueeze(0)
+
 
 
 def validation_IOU(prediction_batch, actual_batch):
